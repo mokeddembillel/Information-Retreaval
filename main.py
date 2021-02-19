@@ -7,7 +7,7 @@ raw = open('.\Data\cacm.all', 'r')
 
 raw = raw.readlines()
 
-# create a dictionary of articles from the collections
+# Create a dictionary of articles from the collections
 import re
 
 l = []
@@ -28,7 +28,20 @@ for line in raw:
         k1 = k2
 collection[int(k1)] = l
 
-print(collection)
+
+# Create a list of words (only the ones we need) for each article, 
+for k,v in collection.items():
+    
+    l1 = []
+    for i in range(len(v)):
+        m = re.match('\.([A-Z])\n', v[i])
+        if m:
+            k1 = m.group(1)
+        if k1 == 'T' or k1 == 'W' or k1 == 'A':
+            if not m:
+                l1 += re.split(",|;| |:|\?|!|,|\'|\"|\.|-|\n|\t",v[i])     
+    collection[k] = l1
+
 
 
 
