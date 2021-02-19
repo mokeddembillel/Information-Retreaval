@@ -42,16 +42,18 @@ for k,v in collection.items():
                 l1 += re.split(",|;| |:|\?|!|,|\'|\"|\.|-|\n|\t",v[i])     
     collection[k] = l1
 
+# Create a frequency dictionary
+collectionFreq = {}
 
-
-
-
-
-
-
-
-
-
+for k,v in collection.items():
+    tmpDict = {}
+    for word in v:
+        if word in tmpDict.keys():
+            tmpDict[word] += 1
+        else:
+            tmpDict[word] = 1
+    collectionFreq[k] = tmpDict
+    
 
 
 
