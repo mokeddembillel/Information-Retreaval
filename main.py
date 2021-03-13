@@ -1,5 +1,6 @@
 import re
 import numpy as np
+import nltk
 from nltk.corpus import stopwords
 
 def create_doc_dict(raw):   
@@ -93,7 +94,30 @@ def create_word_weights_dict(collection_word_freq, weights):
             collection_word_weights[word][article] = weights[article][word]
     return collection_word_weights
 
+def boolean_model(query, collection_article_freq):  
+    # Boolean model
+    result = []
+    for article in collection_article_freq: 
+        document = {}
+        query_str = ''
+        for word in collection_article_freq[article]:
+            document[word] = collection_article_freq[article][word]
+        query_words = nltk.tokenize.word_tokenize(query)    
+        for word in query_words:            
+            
+            if(word.lower() not in ['and','or','(',')','not']): 
+                if(word.lower() not in  document):
+                    query_words[query_words.collection_article_freq(word)] = 0
+                else:
+                    query_words[query_words.collection_article_freq(word)] = 1
+        for i in query_words:
+            query_str = query_str+' '+str(i)
+        if(eval(query_str) == 1):
+            result.append(article)  
+    return result 
+
 def vector_model(query, collection_article_weights, measure):
+    # A vector model that uses four measures InnerProduct, Coeff Dice, Cosinus and Jaccard
     relevent_articles = {}
     query = query.lower().split()
     if(measure == 'InnerProduct'):
@@ -104,9 +128,8 @@ def vector_model(query, collection_article_weights, measure):
                     print(word)
                     sum_ += collection_article_weights[article][word]
             if(sum_ != 0):
-                relevent_articles[article] = sum_ 
-                
-    elif (measure == 'Coeff Dice'): #Calcul de similarité avec Coefficient de Dice
+                relevent_articles[article] = sum_         
+    elif (measure == 'Coeff Dice'):
         for article in collection_article_weights.keys():
             numerator = 0
             denominator = 0
@@ -123,8 +146,7 @@ def vector_model(query, collection_article_weights, measure):
                 dice_coef = numerator / denominator
             if(dice_coef != 0):
                 relevent_articles[article] = dice_coef 
-                
-    elif (measure == 'Cosinus'): #Calcul de similarité avec Cosinus
+    elif (measure == 'Cosinus'):
         for article in collection_article_weights.keys():
             numerator = 0
             denominator = 0
@@ -142,7 +164,7 @@ def vector_model(query, collection_article_weights, measure):
                 cosinus = numerator / denominator
             if(cosinus != 0):
                 relevent_articles[article] = cosinus 
-    elif (measure == 'Jaccard'): #Calcul de similarité avec Jaccard
+    elif (measure == 'Jaccard'):
         for article in collection_article_weights.keys():
             numerator = 0
             denominator = 0
