@@ -23,6 +23,41 @@ def create_doc_dict(raw):
     collection[int(k1)] = l
     return collection
 
+def get_queries(path='Data/query.txt'):
+    # Get and preprocess queries from the test file
+    stop_words = set(stopwords.words('english')) 
+    raw = open(path, 'r')
+    raw = raw.readlines()
+    l = []
+    k1 = 1
+    collection = {}
+    for line in raw:
+        if re.match('\.I \d+', line):
+            m = re.match('\.I (\d+)', line)
+            k2 = m.group(1)        
+        if k1 == k2:
+            l.append(line)
+        else: 
+            collection[int(k1)] = l
+            l = []
+            k1 = k2
+        collection[int(k1)] = l
+    for k,v in collection.items():
+        l1 = []
+        for i in range(len(v)):
+            m = re.match('\.([A-Z])\n', v[i])
+            if m:
+                k1 = m.group(1)
+            if k1 == 'W' or k1 == 'N':
+                if not m:
+                    l1 += re.split(",|;| |:|\?|!|,|\'|\"|\.|-|\n|\t|\(|\)",v[i])     
+        l3=[]
+        for word in l1:
+            if word not in stop_words and word != '':
+                l3.append(word)  
+        collection[k] = l3
+    return collection  
+
 def get_article_wordlist(collection):
     # Create a list of words (only the ones we need) for each article, 
     for k,v in collection.items():
