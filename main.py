@@ -77,7 +77,7 @@ def create_word_frequency_dict(collection):
                 
     return collection_freq
 
-def get_weights(collection_article_freq, collection_word_freq):
+def create_article_weights_dict(collection_article_freq, collection_word_freq):
     # Get the weights of words in each article
     max_freq={}
     weights={}
@@ -100,6 +100,7 @@ def create_word_weights_dict(collection_word_freq, weights):
             collection_word_weights[word][article] = weights[article][word]
     return collection_word_weights
 
+
 # Reading the collection file
 raw = open('.\Data\cacm.all', 'r')
 
@@ -113,6 +114,6 @@ collection_article_freq = create_article_frequency_dict(collection)
 
 collection_word_freq = create_word_frequency_dict(collection)
 
-weights = get_weights(collection_article_freq, collection_word_freq)
+collection_article_weights = create_article_weights_dict(collection_article_freq, collection_word_freq)
 
-collection_word_weights = create_word_weights_dict(collection_word_freq, weights)
+collection_word_weights = create_word_weights_dict(collection_word_freq, collection_article_weights)
