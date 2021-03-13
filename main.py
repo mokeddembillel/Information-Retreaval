@@ -40,9 +40,7 @@ def get_article_wordlist(collection):
 def create_article_frequency_dict(collection):
     # Create an article's frequency dictionary
     collectionFreq = {}
-    
-    stop_words = set(stopwords.words('english')) 
-    
+    stop_words = set(stopwords.words('english'))    
     for k,v in collection.items():
         tmpDict = {}
         for word in v:
@@ -58,12 +56,8 @@ def create_article_frequency_dict(collection):
 def create_word_frequency_dict(collection):
     # Create a word's frequency dictionary (inverse file)
     collection_freq = {}
-    
     stop_words = set(stopwords.words('english')) 
-
-    
-    for k,v in collection.items():
-        
+    for k,v in collection.items():    
         for word in v:
             word = word.lower()
             if word not in stop_words:
@@ -73,8 +67,7 @@ def create_word_frequency_dict(collection):
                     if k not in collection_freq[word].keys():
                         collection_freq[word][k] = 1
                     else:
-                        collection_freq[word][k] += 1
-                
+                        collection_freq[word][k] += 1            
     return collection_freq
 
 def create_article_weights_dict(collection_article_freq, collection_word_freq):
@@ -100,6 +93,75 @@ def create_word_weights_dict(collection_word_freq, weights):
             collection_word_weights[word][article] = weights[article][word]
     return collection_word_weights
 
+def vector_model(query, collection_article_weights, measure):
+    relevent_articles = {}
+    query = query.lower().split()
+    if(measure == 'InnerProduct'):
+        for article in collection_article_weights.keys():
+            sum_ = 0
+            for word in query:
+                if word in collection_article_weights[article].keys():
+                    print(word)
+                    sum_ += collection_article_weights[article][word]
+            if(sum_ != 0):
+                relevent_articles[article] = sum_ 
+                
+    elif (measure == 'Coeff Dice'): #Calcul de similarité avec Coefficient de Dice
+        for article in collection_article_weights.keys():
+            numerator = 0
+            denominator = 0
+            for word in query:
+                if word in collection_article_weights[article].keys():
+                    numerator += collection_article_weights[article][word]
+                    # Supposed to be x**2 but since the querry is binary it would be 1**2 
+                    denominator += 1
+            numerator *= 2
+            for weight in collection_article_weights[article].values():
+                denominator += weight ** 2
+            dice_coef = 0
+            if denominator != 0:
+                dice_coef = numerator / denominator
+            if(dice_coef != 0):
+                relevent_articles[article] = dice_coef 
+                
+    elif (measure == 'Cosinus'): #Calcul de similarité avec Cosinus
+        for article in collection_article_weights.keys():
+            numerator = 0
+            denominator = 0
+            for word in query:
+                if word in collection_article_weights[article].keys():
+                    numerator += collection_article_weights[article][word]
+                    # Supposed to be x**2 but since the querry is binary it would be 1**2 
+                    denominator += 1
+            weights_sum = 0
+            for weight in collection_article_weights[article].values():
+                weights_sum += weight ** 2
+            denominator = np.sqrt(denominator * weights_sum)
+            cosinus = 0
+            if denominator != 0:
+                cosinus = numerator / denominator
+            if(cosinus != 0):
+                relevent_articles[article] = cosinus 
+    elif (measure == 'Jaccard'): #Calcul de similarité avec Jaccard
+        for article in collection_article_weights.keys():
+            numerator = 0
+            denominator = 0
+            for word in query:
+                if word in collection_article_weights[article].keys():
+                    numerator += collection_article_weights[article][word]
+                    # Supposed to be x**2 but since the querry is binary it would be 1**2 
+                    denominator += 1
+            for weight in collection_article_weights[article].values():
+                denominator += weight ** 2
+            denominator -= numerator
+            jaccard = 0
+            if denominator != 0:
+                jaccard = numerator / denominator
+            if(jaccard != 0):
+                relevent_articles[article] = jaccard 
+    relevent_articles = sorted(relevent_articles.items(), key=lambda item: item[1], reverse=True)
+    return relevent_articles[:20]
+
 
 # Reading the collection file
 raw = open('.\Data\cacm.all', 'r')
@@ -117,3 +179,19 @@ collection_word_freq = create_word_frequency_dict(collection)
 collection_article_weights = create_article_weights_dict(collection_article_freq, collection_word_freq)
 
 collection_word_weights = create_word_weights_dict(collection_word_freq, collection_article_weights)
+
+query = 'Preliminary International Algebraic Report Perlis Samelson'
+
+measures = ['InnerProduct', 'Coeff Dice', 'Cosinus', 'Jaccard']
+
+relevent_articles = vector_model(query, collection_article_weights, measures[3])
+
+print(relevent_articles)
+
+
+
+
+
+
+
+
