@@ -58,6 +58,23 @@ def get_queries(path='Data/query.txt'):
         collection[k] = l3
     return collection  
 
+def get_queries_results(path='Data/qrels.txt'):
+    # Get queries test results
+    raw = open(path, 'r')
+    raw = raw.readlines()
+    index_query=1
+    references={}
+    l=[]
+    for line in raw:
+        liste = line.split()
+        if liste[0] != index_query:
+            references[index_query]=l
+            l=[]
+            index_query=liste[0]
+        l.append(liste[1])
+    references[liste[0]]=l
+    return references
+
 def get_article_wordlist(collection):
     # Create a list of words (only the ones we need) for each article, 
     for k,v in collection.items():
