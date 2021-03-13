@@ -1,4 +1,5 @@
 import re
+import numpy as np
 from nltk.corpus import stopwords
 
 def create_doc_dict(raw):   
@@ -46,13 +47,29 @@ def create_article_frequency_dict(collection):
         tmpDict = {}
         for word in v:
             word = word.lower()
-            if word not in stop_words and word != ' ':
+            if word not in stop_words:
                 if word in tmpDict.keys():
                     tmpDict[word] += 1
                 else:
                     tmpDict[word] = 1
         collectionFreq[k] = tmpDict
     return collectionFreq
+
+
+def get_weights(collection_article_freq, collection_word_freq):
+    max_freq={}
+    weights={}
+    
+    for i in collection_article_freq.keys():
+        max_freq[i]=max(collection_article_freq[i].values())
+    
+    for i in collection_article_freq.keys() :
+        document_weights={}
+        for j in collection_article_freq[i].keys():
+            document_weights[j] = (float(collection_article_freq[i][j] / max_freq[i]) * np.log10( float(len(collection_article_freq)) / len(collection_word_freq[j].keys()) + 1))  
+        weights[i] = document_weights
+    return weights
+    
 
 def create_word_frequency_dict(collection):
     # Create a frequency dictionary
@@ -65,7 +82,7 @@ def create_word_frequency_dict(collection):
         
         for word in v:
             word = word.lower()
-            if word not in stop_words and word != ' ':
+            if word not in stop_words:
                 if word not in collection_freq.keys():
                     collection_freq[word] = {k: 1}
                 else:
@@ -77,7 +94,6 @@ def create_word_frequency_dict(collection):
     return collection_freq
 
 
-    
 
 # Reading the collection file
 raw = open('.\Data\cacm.all', 'r')
@@ -92,45 +108,5 @@ collection_article_freq = create_article_frequency_dict(collection)
 
 collection_word_freq = create_word_frequency_dict(collection)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+weights = get_weights(collection_article_freq, collection_word_freq)
 
