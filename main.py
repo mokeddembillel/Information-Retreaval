@@ -238,12 +238,9 @@ def vector_model(query, collection_article_weights, measure):
 def get_recall(resultat,reference):  
     inter = []
     for i in resultat:
-        
         if str(i[0]) in reference:
             inter.append(i)
     if(len(reference)!=0):
-        print(len(inter))
-
         Rappel = (len(inter)/len(reference))
     return Rappel
 
@@ -252,7 +249,8 @@ def get_precision(resultat,reference):
     for i in resultat:
         if str(i[0]) in reference:
             inter.append(i)
-    if(len(resultat)!=0):
+    precision = 0
+    if(len(resultat) != 0):
         precision = len(inter)/len(resultat)
     else:
         print("Aucun document n'a été retourné")
@@ -261,6 +259,8 @@ def get_precision(resultat,reference):
 def get_f1_score(relevent_articles, query_result):
     recall = recall = get_recall(relevent_articles, query_result)
     precision = get_precision(relevent_articles, query_result)
+    if recall + precision == 0:
+        return 0
     return (2 * recall * precision) / (recall + precision)
 
 # Reading the collection file
@@ -289,9 +289,36 @@ queries = get_queries()
 
 queries_results = get_queries_results()
 
-relevent_articles = vector_model(' '.join(queries[1]), collection_article_weights, measures[2])
+# relevent_articles = vector_model(' '.join(queries[1]), collection_article_weights, measures[2])
 
-f1_score = get_f1_score(relevent_articles, queries_results[1])
+# f1_score = get_f1_score(relevent_articles, queries_results[1])
+
+def hyper_parameter_tuning(queries, queries_results):
+    best_performances = []
+    for query_number in queries:
+        if query_number not in queries_results.keys():
+                continue
+        relevent_articles = vector_model(' '.join(queries[query_number]), collection_article_weights, measures[2])
+        best_f1_score = (0, 0, query_number)
+        for i in range(1, len(relevent_articles)):
+            f1_score = get_f1_score(relevent_articles[:i], queries_results[query_number])
+            if f1_score > best_f1_score[0]:
+                best_f1_score = (f1_score, i, len(queries_results[query_number]))
+        best_performances.append(best_f1_score)
+        #print(best_performances[-1][0], ' -- ', best_performances[-1][1], ' -- ', len(queries[best_performances[-1][2]]))
+    return best_performances
+
+best_performances = hyper_parameter_tuning(queries, queries_results)
+
+
+for test in best_performances:
+    print(abs(test[1] - test[2]))
+
+
+
+
+
+
 
 
 
