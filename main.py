@@ -62,7 +62,7 @@ def get_queries_results(path='Data/qrels.txt'):
     # Get queries test results
     raw = open(path, 'r')
     raw = raw.readlines()
-    index_query=1
+    index_query = '01'
     references={}
     l=[]
     for line in raw:
@@ -177,7 +177,6 @@ def vector_model(query, collection_article_weights, measure):
             sum_ = 0
             for word in query:
                 if word in collection_article_weights[article].keys():
-                    print(word)
                     sum_ += collection_article_weights[article][word]
             if(sum_ != 0):
                 relevent_articles[article] = sum_         
@@ -234,8 +233,16 @@ def vector_model(query, collection_article_weights, measure):
             if(jaccard != 0):
                 relevent_articles[article] = jaccard 
     relevent_articles = sorted(relevent_articles.items(), key=lambda item: item[1], reverse=True)
-    return relevent_articles[:20]
+    return relevent_articles[:100]
 
+def recall(resultat,reference):  
+    inter=[]
+    for i in resultat:
+        if i in reference:
+            inter.append(i)
+    if(len(reference)!=0):
+        Rappel=(len(inter)/len(reference))
+    return Rappel
 
 # Reading the collection file
 raw = open('.\Data\cacm.all', 'r')
@@ -254,13 +261,18 @@ collection_article_weights = create_article_weights_dict(collection_article_freq
 
 collection_word_weights = create_word_weights_dict(collection_word_freq, collection_article_weights)
 
-query = 'Preliminary International Algebraic Report Perlis Samelson'
+# query = 'Preliminary International Algebraic Report Perlis Samelson'
+
+# Evaluation phase
+
+queries = get_queries()
+
+queries_results = get_queries_results()
 
 measures = ['InnerProduct', 'Coeff Dice', 'Cosinus', 'Jaccard']
 
-relevent_articles = vector_model(query, collection_article_weights, measures[3])
+relevent_articles = vector_model(' '.join(queries[2]), collection_article_weights, measures[0])
 
-print(relevent_articles)
 
 
 
