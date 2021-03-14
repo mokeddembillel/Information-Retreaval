@@ -308,6 +308,24 @@ def hyper_parameter_tuning(queries, queries_results):
         #print(best_performances[-1][0], ' -- ', best_performances[-1][1], ' -- ', len(queries[best_performances[-1][2]]))
     return best_performances
 
+def hyper_parameter_tuning_2(queries, queries_results):
+    best_performances = []
+    for i in range(1, len(relevent_articles)):
+        recall = []
+        precision = []
+        for query_number in queries:
+            if query_number not in queries_results.keys():
+                continue
+            relevent_articles = vector_model(' '.join(queries[query_number]), collection_article_weights, measures[2])
+            
+            
+            if f1_score > best_f1_score[0]:
+                best_f1_score = (f1_score, i, len(queries_results[query_number]))
+            best_performances.append(best_f1_score)
+            #print(best_performances[-1][0], ' -- ', best_performances[-1][1], ' -- ', len(queries[best_performances[-1][2]]))
+    return best_performances
+
+
 best_performances = hyper_parameter_tuning(queries, queries_results)
 
 
