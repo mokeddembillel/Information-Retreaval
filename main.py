@@ -62,15 +62,15 @@ def get_queries_results(path='Data/qrels.txt'):
     # Get queries test results
     raw = open(path, 'r')
     raw = raw.readlines()
-    index_query = '01'
+    index_query = 1
     references={}
     l=[]
     for line in raw:
         liste = line.split()
-        if liste[0] != index_query:
-            references[index_query]=l
-            l=[]
-            index_query=liste[0]
+        if int(liste[0]) != index_query:
+            references[index_query] = l
+            l = []
+            index_query = int(liste[0])
         l.append(liste[1])
     references[liste[0]]=l
     return references
@@ -233,27 +233,35 @@ def vector_model(query, collection_article_weights, measure):
             if(jaccard != 0):
                 relevent_articles[article] = jaccard 
     relevent_articles = sorted(relevent_articles.items(), key=lambda item: item[1], reverse=True)
-    return relevent_articles[:100]
+    return relevent_articles
 
-def recall(resultat,reference):  
-    inter=[]
+def get_recall(resultat,reference):  
+    inter = []
     for i in resultat:
-        if i in reference:
+        
+        if str(i[0]) in reference:
             inter.append(i)
     if(len(reference)!=0):
-        Rappel=(len(inter)/len(reference))
+        print(len(inter))
+
+        Rappel = (len(inter)/len(reference))
     return Rappel
 
-def precision(resultat,reference ):
+def get_precision(resultat,reference):
     inter=[]
     for i in resultat:
-        if i in reference:
+        if str(i[0]) in reference:
             inter.append(i)
     if(len(resultat)!=0):
-        Precision=(len(inter)/len(resultat))
+        precision = len(inter)/len(resultat)
     else:
         print("Aucun document n'a été retourné")
-    return Precision
+    return precision
+
+def get_f1_score(relevent_articles, query_result):
+    recall = recall = get_recall(relevent_articles, query_result)
+    precision = get_precision(relevent_articles, query_result)
+    return (2 * recall * precision) / (recall + precision)
 
 # Reading the collection file
 raw = open('.\Data\cacm.all', 'r')
@@ -275,20 +283,15 @@ collection_word_weights = create_word_weights_dict(collection_word_freq, collect
 # query = 'Preliminary International Algebraic Report Perlis Samelson'
 
 # Evaluation phase
+measures = ['InnerProduct', 'Coeff Dice', 'Cosinus', 'Jaccard']
 
 queries = get_queries()
 
 queries_results = get_queries_results()
 
-measures = ['InnerProduct', 'Coeff Dice', 'Cosinus', 'Jaccard']
+relevent_articles = vector_model(' '.join(queries[1]), collection_article_weights, measures[2])
 
-relevent_articles = vector_model(' '.join(queries[2]), collection_article_weights, measures[0])
-
-
-
-
-
-
+f1_score = get_f1_score(relevent_articles, queries_results[1])
 
 
 
