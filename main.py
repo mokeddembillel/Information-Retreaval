@@ -244,6 +244,17 @@ def recall(resultat,reference):
         Rappel=(len(inter)/len(reference))
     return Rappel
 
+def precision(resultat,reference ):
+    inter=[]
+    for i in resultat:
+        if i in reference:
+            inter.append(i)
+    if(len(resultat)!=0):
+        Precision=(len(inter)/len(resultat))
+    else:
+        print("Aucun document n'a été retourné")
+    return Precision
+
 # Reading the collection file
 raw = open('.\Data\cacm.all', 'r')
 
