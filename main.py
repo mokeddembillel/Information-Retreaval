@@ -312,3 +312,15 @@ def hyper_parameter_tuning(queries, queries_results, measure):
         save_dict('recall', recall)
         save_dict('precision', precision)
     return recall, precision
+
+def test_measures(query, query_result, measures):
+    results = {}
+    for measure in measures:
+        t1 = time.perf_counter()
+        relevent_articles = vector_model(' '.join(query), collection_article_weights, measure)
+        print(relevent_articles[:11])
+        recall = get_recall(relevent_articles[:11], query_result)
+        precision = get_precision(relevent_articles[:11], query_result)
+        t2=time.perf_counter()
+        results[measure] = (recall, precision, t2 - t1)
+    return results
