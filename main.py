@@ -324,3 +324,145 @@ def test_measures(query, query_result, measures):
         t2=time.perf_counter()
         results[measure] = (recall, precision, t2 - t1)
     return results
+
+# Reading the collection file
+t1 = time.perf_counter()
+raw = open('.\Data\cacm.all', 'r')
+
+raw = raw.readlines()
+
+collection = create_doc_dict(raw)
+
+collection = get_article_wordlist(collection)
+t2=time.perf_counter()
+print("le temps d'execution de la phase d'extraction des mots clés est:", t2 - t1)
+
+collection_article_freq = create_article_frequency_dict(collection)
+
+t1 = time.perf_counter()
+collection_word_freq = create_word_frequency_dict(collection)
+t2=time.perf_counter()
+print("le temps d'execution de la phase de la création de fichier inverse de fréquence est:", t2 - t1)
+
+collection_article_weights = create_article_weights_dict(collection_article_freq, collection_word_freq)
+
+t1 = time.perf_counter()
+collection_word_weights = create_word_weights_dict(collection_word_freq, collection_article_weights)
+t2=time.perf_counter()
+print("le temps d'execution de la phase de la création de fichier inverse de poinds est:", t2 - t1)
+
+# query = 'Preliminary International Algebraic Report Perlis Samelson'
+
+# Evaluation phase
+t1 = time.perf_counter()
+measures = ['InnerProduct', 'Coeff Dice', 'Cosinus', 'Jaccard']
+
+queries = get_queries()
+
+queries_results = get_queries_results()
+t2=time.perf_counter()
+print("le temps d'execution de la phase d'extraction des requets est:", t2 - t1)
+
+
+save_dict('collection_word_freq', collection_word_freq)
+
+save_dict('collection_word_weights', collection_word_weights)
+
+# relevent_articles = vector_model(' '.join(queries[1]), collection_article_weights, measures[2])
+
+# f1_score = get_f1_score(relevent_articles, queries_results[1])
+
+#recall, precision = hyper_parameter_tuning(queries, queries_results, measures)
+
+# f1_score = np.divide(np.multiply(np.multiply(2, recall), precision), np.add(recall, precision))
+
+
+
+
+# q = 22
+# results = test_measures(queries[q], queries_results[q], measures)
+
+# for query_number in queries:
+#     if query_number not in queries_results.keys():
+#         continue
+#     results = test_measures(queries[query_number], queries_results[query_number], measures)
+#     print(results.items())
+#     print()
+#     print(query_number)
+
+
+print("Recherche")
+print("1-rechercher par mot")
+print("2-rechercher par document ")
+resp=int(input())
+
+if resp==1:
+    print("Que voulez vous afficher")
+    print("1-La frequence du mots dans les documents")
+    print("2-Le poids du mots dans les documents")
+    resp=int(input())
+    if resp==1:
+        print("donner le mot a rechercher")
+        mot=input()
+        mot=str(mot)
+        print(word_search(collection_word_freq,mot))
+    if resp==2:
+        print("donner le mot a rechercher")
+        mot=input()
+        mot=str(mot)
+        print(word_search(collection_word_weights,mot))
+if resp==2:
+    print("Que voulez vous afficher")
+    print("1-La frequence des mots du document")
+    print("2-Le poids des mots du document")
+    resp=int(input())
+    if resp==1:
+        print("donner le numero de document a rechercher")
+        mot=input()
+        mot=int(mot)
+        print(article_search(collection_article_freq,mot))
+    if resp==2:
+        print("donner le numero de document a rechercher")
+        mot=input()
+        mot=int(mot)
+        print(article_search(collection_article_weights,mot))
+
+print()
+print("Modele Booleen")
+print("veuillez saisir votr requete booleenne")
+req=input()
+req=str(req)
+result=boolean_model(req, collection_article_freq)
+print(result)
+
+print()
+print("Modele Vectoriel")
+
+print("Introduire le numero de requete que vous voullez essayer ")
+print(" de 1 à 64 \n")
+index=input()
+index=int(index)
+print('\n Les mots cles de la requete sont :\n',queries[index])
+print()
+print('Les documents qui doivent etre trouvés :\n',queries_results[index])
+
+print('quelle mesure du modele vectoriel voulez vous utiliser :joy:')
+print('1-InnerProduct ')
+print('2-Coeff Dice ')
+print('3-Cosinus ')
+print('4-Jaccard ')
+resp=int(input())
+if resp==1 :
+    relevent_articles = vector_model(' '.join(queries[index]), collection_article_weights, measures[0])
+if resp==2 :
+    relevent_articles = vector_model(' '.join(queries[index]), collection_article_weights, measures[1])
+if resp==3 :
+    relevent_articles = vector_model(' '.join(queries[index]), collection_article_weights, measures[2])
+if resp==4 :
+    relevent_articles = vector_model(' '.join(queries[index]), collection_article_weights, measures[3])
+
+recall = get_recall(relevent_articles[:11], queries_results[index])
+print('Rappel : ', recall)
+precision = get_precision(relevent_articles[:11], queries_results[index])
+print('Precision : ', precision)
+
