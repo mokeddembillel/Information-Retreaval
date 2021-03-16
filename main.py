@@ -2,7 +2,7 @@ import re
 import numpy as np
 import nltk
 from nltk.corpus import stopwords
-
+import time
 def create_doc_dict(raw):   
     # Create a dictionary of articles from the collections
     l = []
@@ -146,6 +146,18 @@ def create_word_weights_dict(collection_word_freq, weights):
             collection_word_weights[word][article] = weights[article][word]
     return collection_word_weights
 
+def word_search(dict_,word):
+    return dict_[word]
+
+def article_search(dict_, article):
+    return dict_[article]
+
+def save_dict(file_name, dict_):
+    file = open(file_name,'w')
+    file.write(str(dict_))
+    file.close()
+    
+
 def boolean_model(query, collection_article_freq):  
     # Boolean model
     result = []
@@ -159,9 +171,9 @@ def boolean_model(query, collection_article_freq):
             
             if(word.lower() not in ['and','or','(',')','not']): 
                 if(word.lower() not in  document):
-                    query_words[query_words.collection_article_freq(word)] = 0
+                    query_words[query_words.index(word)] = 0
                 else:
-                    query_words[query_words.collection_article_freq(word)] = 1
+                    query_words[query_words.index(word)] = 1
         for i in query_words:
             query_str = query_str+' '+str(i)
         if(eval(query_str) == 1):
@@ -262,81 +274,3 @@ def get_f1_score(relevent_articles, query_result):
     if recall + precision == 0:
         return 0
     return (2 * recall * precision) / (recall + precision)
-
-# Reading the collection file
-raw = open('.\Data\cacm.all', 'r')
-
-raw = raw.readlines()
-
-collection = create_doc_dict(raw)
-
-collection = get_article_wordlist(collection)
-
-collection_article_freq = create_article_frequency_dict(collection)
-
-collection_word_freq = create_word_frequency_dict(collection)
-
-collection_article_weights = create_article_weights_dict(collection_article_freq, collection_word_freq)
-
-collection_word_weights = create_word_weights_dict(collection_word_freq, collection_article_weights)
-
-# query = 'Preliminary International Algebraic Report Perlis Samelson'
-
-# Evaluation phase
-measures = ['InnerProduct', 'Coeff Dice', 'Cosinus', 'Jaccard']
-
-queries = get_queries()
-
-queries_results = get_queries_results()
-
-# relevent_articles = vector_model(' '.join(queries[1]), collection_article_weights, measures[2])
-
-# f1_score = get_f1_score(relevent_articles, queries_results[1])
-
-def hyper_parameter_tuning(queries, queries_results):
-    best_performances = []
-    for query_number in queries:
-        if query_number not in queries_results.keys():
-                continue
-        relevent_articles = vector_model(' '.join(queries[query_number]), collection_article_weights, measures[2])
-        best_f1_score = (0, 0, query_number)
-        for i in range(1, len(relevent_articles)):
-            f1_score = get_f1_score(relevent_articles[:i], queries_results[query_number])
-            if f1_score > best_f1_score[0]:
-                best_f1_score = (f1_score, i, len(queries_results[query_number]))
-        best_performances.append(best_f1_score)
-        #print(best_performances[-1][0], ' -- ', best_performances[-1][1], ' -- ', len(queries[best_performances[-1][2]]))
-    return best_performances
-
-def hyper_parameter_tuning_2(queries, queries_results):
-    best_performances = []
-    for i in range(1, len(relevent_articles)):
-        recall = []
-        precision = []
-        for query_number in queries:
-            if query_number not in queries_results.keys():
-                continue
-            relevent_articles = vector_model(' '.join(queries[query_number]), collection_article_weights, measures[2])
-            
-            
-            if f1_score > best_f1_score[0]:
-                best_f1_score = (f1_score, i, len(queries_results[query_number]))
-            best_performances.append(best_f1_score)
-            #print(best_performances[-1][0], ' -- ', best_performances[-1][1], ' -- ', len(queries[best_performances[-1][2]]))
-    return best_performances
-
-
-best_performances = hyper_parameter_tuning(queries, queries_results)
-
-
-for test in best_performances:
-    print(abs(test[1] - test[2]))
-
-
-
-
-
-
-
-
-
