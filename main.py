@@ -274,3 +274,41 @@ def get_f1_score(relevent_articles, query_result):
     if recall + precision == 0:
         return 0
     return (2 * recall * precision) / (recall + precision)
+
+# def hyper_parameter_tuning(queries, queries_results, measure):
+#     best_performances = []
+#     for query_number in queries:
+#         if query_number not in queries_results.keys():
+#                 continue
+#         relevent_articles = vector_model(' '.join(queries[query_number]), collection_article_weights, measures[2])
+#         best_f1_score = (0, 0, query_number)
+#         for i in range(1, len(relevent_articles)):
+#             f1_score = get_f1_score(relevent_articles[:i], queries_results[query_number])
+#             if f1_score > best_f1_score[0]:
+#                 best_f1_score = (f1_score, i, len(queries_results[query_number]))
+#         best_performances.append(best_f1_score)
+#         #print(best_performances[-1][0], ' -- ', best_performances[-1][1], ' -- ', len(queries[best_performances[-1][2]]))
+#     return best_performances
+
+def hyper_parameter_tuning(queries, queries_results, measure):
+    # hyper
+    recall = []
+    precision = []
+    for i in range(1, 2):
+        recall_tmp = []
+        precision_tmp = []
+        for query_number in queries:
+            if query_number not in queries_results.keys():
+                continue
+            relevent_articles = vector_model(' '.join(queries[query_number]), collection_article_weights, measures[2])
+            max_length = len(relevent_articles)
+            if i < max_length:
+                max_length = i
+            recall_tmp.append(get_recall(relevent_articles[:i], queries_results[query_number]))
+            precision_tmp.append(get_precision(relevent_articles[:i], queries_results[query_number]))
+        
+        recall.append(np.mean(recall_tmp))
+        precision.append(np.mean(precision_tmp))
+        save_dict('recall', recall)
+        save_dict('precision', precision)
+    return recall, precision
